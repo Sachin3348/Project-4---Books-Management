@@ -1,4 +1,5 @@
 const userModel = require('../models/userModel');
+const jwt = require('jsonwebtoken')
 
 
 //validation
@@ -22,7 +23,6 @@ const isValidTitle = function (title) {
     return ['Mr', 'Mrs', 'Miss'].indexOf(title) > -1
 }
 
-//
 const createUser = async function (req, res) {
     try {
         const requestBody = req.body
@@ -37,6 +37,7 @@ const createUser = async function (req, res) {
             res.status(400).send({ status: false, message: "Title is required" })
             return
         }
+
         if (!isValidTitle(title)) {
             res.status(400).send({ status: false, message: "Title should be among Mr, Mrs and Miss" })
             return
@@ -64,7 +65,7 @@ const createUser = async function (req, res) {
         }
 
         if (!isValid(email)) {
-            res.status(400).send({ status: false, message: "email should be valid" })
+            res.status(400).send({ status: false, message: "email is required" })
             return
         }
         if (!isValidEmail(email)) {
@@ -79,11 +80,11 @@ const createUser = async function (req, res) {
             return
         }
 
-
         if (!isValid(password)) {
             res.status(400).send({ status: false, message: "password is required" })
             return
         }
+
         if (password.trim().length < 8 || password.trim().length > 15) {
             res.status(400).send({ status: false, message: "password should be of minimum 8 and maximum 15 character" })
             return
@@ -100,4 +101,40 @@ const createUser = async function (req, res) {
     }
 }
 
-module.exports.createUser = createUser
+const loginUser = async function (req, res) {
+    try {
+        const requestBody = req.body
+        const { email, password } = requestBody
+
+        // validation starts
+
+        if (!isValidRequestBody(requestBody)) {
+            res.status(400).send({ status: false, message: "Please provide valid credentials" })
+            return
+        }
+
+        if (!isValid(email)) {
+            res.status(400).send({ status: false, message: "please provide email" })
+            return
+        }
+        if (!isValid(password)) {
+            res.status(400).send({ status: false, message: "please provide password" })
+            return
+        }
+
+        const userDetails = await userModel.findOne(requestBody)
+
+        if (!userDetails) {
+            res.status(401).send({ status: "false", message: "Either password or email is not correct, try with valid one" })
+            return
+        }
+        const payload = { "userId": userDetails['_id'], 'exp': Math.floor(Date.now() / 1000) + (60 * 30), "iat": Math.floor(Date.now() / 1000) }
+        const jwtToken = jwt.sign(payload, 'ourSecret')
+        return res.status(200).send({ status: true, message: "success", jwt_token: jwtToken })
+    } catch (err) {
+        return res.status(500).send({ status: false, message: err.message })
+
+    }
+}
+
+module.exports = { createUser, loginUser }
