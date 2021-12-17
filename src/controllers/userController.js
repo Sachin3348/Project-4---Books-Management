@@ -1,5 +1,6 @@
 const userModel = require('../models/userModel');
 
+
 //validation
 const isValid = function (value) {
     if (typeof value === 'undefined' || value === null) return false
@@ -10,83 +11,93 @@ const isValid = function (value) {
 const isValidRequestBody = function (requestBody) {
     return Object.keys(requestBody).length > 0
 }
-const isValidEmail= function(email){
-            return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
-    }
+const isValidEmail = function (email) {
+    return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
+}
 const isValidPhone = function (phone) {
-    return /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/.test(phone)
+    return /^\d{10}$/.test(phone)
 }
 
+const isValidTitle = function (title) {
+    return ['Mr', 'Mrs', 'Miss'].indexOf(title) > -1
+}
 
 //
 const createUser = async function (req, res) {
-    const requestBody = req.body
-    let { title, name, phone, email, password, address } = requestBody
-    if (!isValidRequestBody(requestBody)) {
-        res.status(400).send({ status: false, message: "Please provide valid request body" })
-        return
-    }
-    if (!isValid(title)) {
-        res.status(400).send({ status: false, message: "Title is required" })
-        return
-    }
+    try {
+        const requestBody = req.body
+        let { title, name, phone, email, password, address } = requestBody
 
-    if (!isValid(name)) {
-        res.status(400).send({ status: false, message: "name is required" })
-        return
-    }
-    
-    if (!isValid(phone)) {
-        res.status(400).send({ status: false, message: "phone is required" })
-        return
-    }
-    if(!isValidPhone(phone)){
-        res.status(400).send({status:false, message:"provide valid phone number"})
-        return
-    }
+        //validation starts here
+        if (!isValidRequestBody(requestBody)) {
+            res.status(400).send({ status: false, message: "Please provide valid request body" })
+            return
+        }
+        if (!isValid(title)) {
+            res.status(400).send({ status: false, message: "Title is required" })
+            return
+        }
+        if (!isValidTitle(title)) {
+            res.status(400).send({ status: false, message: "Title should be among Mr, Mrs and Miss" })
+            return
+        }
 
-    const isPhoneAlreadyUsed = await userModel.findOne({ phone })
+        if (!isValid(name)) {
+            res.status(400).send({ status: false, message: "name is required" })
+            return
+        }
 
-    if (isPhoneAlreadyUsed) {
-        res.status(400).send({ status: false, message: "phone is already in use, try something different" })
-        return
-    }
+        if (!isValid(phone)) {
+            res.status(400).send({ status: false, message: "phone is required" })
+            return
+        }
+        if (!isValidPhone(phone)) {
+            res.status(400).send({ status: false, message: "provide valid phone number" })
+            return
+        }
 
-    if (!isValid(email)) {
-        res.status(400).send({ status: false, message: "email should be valid" })
-        return
-    }
-    if (!isValidEmail(email)) {
-        res.status(400).send({ status: false, message: "provide valid email" })
-        return
-    }
+        const isPhoneAlreadyUsed = await userModel.findOne({ phone })
 
-    const isEmailAlreadyUsed = await userModel.findOne({ email })
+        if (isPhoneAlreadyUsed) {
+            res.status(400).send({ status: false, message: "phone is already in use, try something different" })
+            return
+        }
 
-    if (isEmailAlreadyUsed) {
-        res.status(400).send({ status: false, message: "phone is already in use, try something different" })
-        return
-    }
+        if (!isValid(email)) {
+            res.status(400).send({ status: false, message: "email should be valid" })
+            return
+        }
+        if (!isValidEmail(email)) {
+            res.status(400).send({ status: false, message: "provide valid email" })
+            return
+        }
 
+        const isEmailAlreadyUsed = await userModel.findOne({ email })
 
-    if (!isValid(password)) {
-        res.status(400).send({ status: false, message: "password is required" })
-        return
-    }
-    
-    if (!isValidRequestBody(address)) {
-        res.status(400).send({ status: false, message: "Please provide valid address" })
-        return
-    }
+        if (isEmailAlreadyUsed) {
+            res.status(400).send({ status: false, message: "Email is already in use, try something different" })
+            return
+        }
 
 
-    const userDetails = await userModel.create(requestBody)
-    res.status(200).send({status:true,data:userDetails})
-    return
+        if (!isValid(password)) {
+            res.status(400).send({ status: false, message: "password is required" })
+            return
+        }
+        if (password.trim().length < 8 || password.trim().length > 15) {
+            res.status(400).send({ status: false, message: "password should be of minimum 8 and maximum 15 character" })
+            return
+        }
+        //validation ends here
 
+        const userData = { title, name, phone, email, password, address: address ? address : null }
+        const userDetails = await userModel.create(userData)
+        res.status(200).send({ status: true, data: userDetails })
+        return
+    } catch (err) {
+        return res.status(500).send({ status: false, message: err.message })
+
+    }
 }
 
-module.exports.createUser=createUser
-// const isValidTitle = function (title) {
-//     return ['Mr', 'Mrs', 'Miss'].indexOf(title) !== -1
-// }
+module.exports.createUser = createUser

@@ -10,7 +10,6 @@
     "type": "git",
     "url": "https://github.com/Sachin3348/Project-4---Books-Management.git"
   },
-  
   "homepage": "https://github.com/sabihak89/titaniumaplus#readme",
   "dependencies": {
     "body-parser": "^1.19.0",

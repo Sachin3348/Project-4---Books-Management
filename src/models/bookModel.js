@@ -39,7 +39,10 @@ const bookSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    deletedAt: Date,
+    deletedAt: {
+        type: Date,
+        default: null
+    },
     isDeleted: {
         type: Boolean,
         default: false
@@ -47,7 +50,7 @@ const bookSchema = new mongoose.Schema({
     releasedAt: {
         type: Date,
         required: 'releasedAt is required'
-        
+
     }
 }, { timestamps: true })
 
