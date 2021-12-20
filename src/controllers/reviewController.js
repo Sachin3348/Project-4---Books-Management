@@ -20,7 +20,7 @@ const isValidObjectId = function (objectId) {
 const isValidRating = function (rating) {
   return [1, 2, 3, 4, 5].indexOf(rating) > -1;
 };
-
+//////////////////////////////////     CREATE REVIEW /////////////////////
 const createReview = async function (req, res) {
   try {
     const requestBody = req.body;
@@ -90,6 +90,7 @@ const createReview = async function (req, res) {
   }
 };
 
+/////////////////////////////////UPDATE REVIEW ///////////////////////////
 const updateReview = async function (req, res) {
   const requestBody = req.body;
   const _id = req.params.bookId;
@@ -181,9 +182,57 @@ const updateReview = async function (req, res) {
   const reviewsData = await reviewModel.find({ bookId: _id, isDeleted: false });
   let data = { ...bookDetails["_doc"], reviewsData: reviewsData };
 
-  return res.status(200).send({status:true, data : data})
- 
+  return res.status(200).send({ status: true, data: data })
+
 
 };
 
-module.exports = { createReview, updateReview };
+///////////////// DELETE REVIEW ////////////////////
+const deleteReview = async function(req, res){
+  try {
+    let b_id = req.params.bookId
+    if (!isValidObjectId(b_id)) {
+      res
+        .status(400)
+        .send({ status: false, message: "bookid should be valid" });
+      return;
+    }
+
+    let r_id = req.params.reviewId
+    if (!isValidObjectId(r_id)) {
+      res
+        .status(400)
+        .send({ status: false, message: "reviewId should be valid" });
+      return;
+    }
+    let bookRecord = await bookModel.findById(b_id)
+    let reviews = bookRecord.reviews
+    let newReviews= reviews-1
+    if (bookRecord) {
+      let reviewRecord = await reviewModel.findById(r_id)
+      if (reviewRecord) {
+        let deleteReview = await reviewModel.findOneAndUpdate({ _id: r_id, isDeleted: false }, { isDeleted: true }, { new: true })
+        console.log(deleteReview)
+        if (deleteReview) {
+          let updateBook = await bookModel.findOneAndUpdate({ _id: b_id, isDeleted: false },{reviews: newReviews}, { new: true })
+          res.status(200).send(updateBook)
+        }else{
+          res.status(400).send({status:false,message:"review not found"})
+        }
+      } else {
+        res.status(400).send({ status: false, message: "invalid review id enter" })
+      }
+    }else{
+      res.status(400).send({ status: false, message: "invalid book id" })
+
+    }
+
+  }
+  catch (err) {
+    return res.status(500).send({ status: false, message: err.message });
+  }
+}
+
+
+
+module.exports = { createReview, updateReview, deleteReview};
