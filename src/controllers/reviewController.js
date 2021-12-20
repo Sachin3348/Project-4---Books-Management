@@ -124,13 +124,13 @@ const updateReview = async function (req, res) {
   }
 
   let reviewDetails = await reviewModel.findOne({
-    _id: reviewId,
+    _id: reviewId, bookId:_id,
     isDeleted: false,
   });
   if (!reviewDetails) {
     res
       .status(404)
-      .send({ status: false, message: "No review exist with this ID" });
+      .send({ status: false, message: "No review exist with this for this book ID" });
     return;
   }
 
@@ -212,7 +212,6 @@ const deleteReview = async function(req, res){
       let reviewRecord = await reviewModel.findById(r_id)
       if (reviewRecord) {
         let deleteReview = await reviewModel.findOneAndUpdate({ _id: r_id, isDeleted: false }, { isDeleted: true }, { new: true })
-        console.log(deleteReview)
         if (deleteReview) {
           let updateBook = await bookModel.findOneAndUpdate({ _id: b_id, isDeleted: false },{reviews: newReviews}, { new: true })
           res.status(200).send(updateBook)
