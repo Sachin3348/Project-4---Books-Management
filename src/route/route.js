@@ -13,5 +13,8 @@ router.post("/login", userController.loginUser)
 router.get("/books", middleware.authentication, bookController.getBooks)
 router.get("/books/:bookId", middleware.authentication, bookController.getBooksById)
 router.put("/books/:bookId", middleware.authentication, bookController.updateBook)
+router.delete("/books/:bookId", middleware.authentication, bookController.deleteBook)
+router.post("/books/:bookId/review",  reviewController.createReview)
+router.put("/books/:bookId/review/:reviewId",  reviewController.createReview)
 
 module.exports = router

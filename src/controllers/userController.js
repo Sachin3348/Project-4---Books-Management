@@ -128,7 +128,7 @@ const loginUser = async function (req, res) {
             res.status(401).send({ status: "false", message: "Either password or email is not correct, try with valid one" })
             return
         }
-        const payload = { "userId": userDetails['_id'], 'exp': Math.floor(Date.now() / 1000) + (60 * 30), "iat": Math.floor(Date.now() / 1000) }
+        const payload = { "userId": userDetails['_id'], 'exp': Math.floor(Date.now() / 1000) + (60 * 60 * 5), "iat": Math.floor(Date.now() / 1000) }
         const jwtToken = jwt.sign(payload, 'ourSecret')
         return res.status(200).send({ status: true, message: "success", jwt_token: jwtToken })
     } catch (err) {

@@ -15,7 +15,8 @@ const reviewSchema = new mongoose.Schema({
     },
     reviewedAt: {
         type: Date,
-        required: true
+        required: true,
+        default : new Date()
     },
     rating: {
         type: Number,
@@ -23,7 +24,8 @@ const reviewSchema = new mongoose.Schema({
         enum: [1, 2, 3, 4, 5]
     },
     review: {
-        type: String
+        type: String,
+        default: ''
     },
     isDeleted: {
         type: Boolean,
